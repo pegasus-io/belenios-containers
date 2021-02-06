@@ -23,7 +23,7 @@ export OPAMROOT=/root/.belenios/opam
 #; export OPAMROOT;
 
 
-eval $(opam env) && make minimal
+eval $(opam env) && make build-release-server
 
 
 exit 0

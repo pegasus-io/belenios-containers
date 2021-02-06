@@ -13,5 +13,14 @@ The `minimal` `Makefile` target, builds the following:
 * `belenios`
 * `belenios-tool`
 
+```bash
+tree -allh ./oci/builder/platform/minimal/belenios_sys_root/_build/ | grep 'belenios-platform'
+tree -allh ./oci/builder/platform/minimal/belenios_sys_root/_build/ | grep 'belenios-platform-native'
+tree -allh ./oci/builder/platform/minimal/belenios_sys_root/_build/ | grep 'belenios-tool'
+tree -allh ./oci/builder/platform/minimal/belenios_sys_root/_build/ | grep 'belenios'
+
+
+
+```
 
 The question is : Can all those components be built independently ?

@@ -23,7 +23,7 @@ export OPAMROOT=/root/.belenios/opam
 #; export OPAMROOT;
 
 
-eval $(opam env) && make doc && make doc/specification.pdf
+eval $(opam env) && make check
 
 
 exit 0
