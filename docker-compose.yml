@@ -1,0 +1,55 @@
+version: '3.7'
+
+networks:
+  belenios_frontend_net:
+    name: belenios_frontend_net
+  belenios_backend_net:
+    name: belenios_backend_net
+
+services:
+  belenios_frontend:
+    image: quay.io/pegasusio/:v1.7
+    # command: --api --docker
+    container_name: belenios_frontend
+    build:
+      context: ./oci/runtime/frontend
+      args:
+        - DEBIAN_BASE_IMAGE_TAG=$DEBIAN_BASE_IMAGE_TAG
+    ports:
+      # only expose https to outside world
+      - "443:443"   # SSL
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - "$PWD/traefik/config/traefik.toml:/etc/traefik/traefik.toml"
+      - "$PWD/traefik/certs/:/certs/"
+    labels:
+      - "traefik.enable=true"
+    # depends_on:
+      # - belenios_backend
+    networks:
+      belenios_frontend_net:
+        aliases:
+          - web.belenios.io
+  belenios_backend:
+    image: quay.io/pegasusio/:v1.7
+    # command: --api --docker
+    container_name: belenios_frontend
+    build:
+      context: ./oci/runtime/backend
+      args:
+        - DEBIAN_BASE_IMAGE_TAG=$DEBIAN_BASE_IMAGE_TAG
+    ports:
+      # only expose https to outside world
+      - "443:443"   # SSL
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - "$PWD/traefik/config/traefik.toml:/etc/traefik/traefik.toml"
+      - "$PWD/traefik/certs/:/certs/"
+    labels:
+      - "traefik.enable=true"
+    # depends_on:
+      # - belenios_backend
+    networks:
+      belenios_backend_net:
+        aliases:
+          - web.belenios.io

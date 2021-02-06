@@ -1,0 +1,57 @@
+version: '3.7'
+
+# ---
+# We may like to run the belenios build process behind a proxy :
+# => to optimize the file downloads
+# => to bring in metrics on the build process, and for example be
+#    able to audit every single file that is downladed during the build process.
+# ---
+# networks:
+  # belenios_build_net:
+    # name: belenios_build_net
+
+services:
+  belenios_frontend:
+    image: quay.io/pegasusio/belenios_frontend:v1.7
+    # command: --api --docker
+    container_name: belenios_frontend
+    build:
+      context: ./oci/runtime/frontend
+      args:
+        - DEBIAN_BASE_IMAGE_TAG=$DEBIAN_BASE_IMAGE_TAG
+    # ports:
+      # # only expose https to outside world
+      # - "443:443"   # SSL
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - "$PWD/traefik/config/traefik.toml:/etc/traefik/traefik.toml"
+      - "$PWD/traefik/certs/:/certs/"
+    labels:
+      - "belenios.rocks=true"
+    # depends_on:
+      # - belenios_backend
+    # networks:
+      # belenios_build_net:
+        # aliases:
+          # - web.belenios.io
+  belenios_backend_minimal:
+    image: quay.io/pegasusio/belenios_backend_minimal:${BELENIOS_CONTAINERS_TAG}
+    # command: --api --docker
+    container_name: belenios_backend_minimal_build
+    build:
+      context: ./oci/builder/platform/minimal
+      args:
+        - DEBIAN_BASE_IMAGE_TAG=$DEBIAN_BASE_IMAGE_TAG
+    # ports:
+      # # only expose https to outside world
+      # - "443:443"   # SSL
+    volumes:
+      - "$PWD/oci/builder/platform/minimal/belenios_sys_root:/belenios/src_code"
+    labels:
+      - "belenios.rocks=true"
+    # depends_on:
+      # - belenios_backend
+    # networks:
+      # belenios_build_net:
+        # aliases:
+          # - web.belenios.io
