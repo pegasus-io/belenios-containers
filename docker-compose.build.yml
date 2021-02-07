@@ -1,0 +1,169 @@
+version: '3.7'
+
+# ---
+# We may like to run the belenios build process behind a proxy :
+# => to optimize the file downloads
+# => to bring in metrics on the build process, and for example be
+#    able to audit every single file that is downladed during the build process.
+# ---
+# networks:
+  # belenios_build_net:
+    # name: belenios_build_net
+
+services:
+  belenios_frontend:
+    image: quay.io/pegasusio/belenios_frontend:v1.7
+    # command: --api --docker
+    container_name: belenios_frontend
+    build:
+      context: ./oci/runtime/frontend
+      args:
+        - DEBIAN_BASE_IMAGE_TAG=$DEBIAN_BASE_IMAGE_TAG
+    # ports:
+      # # only expose https to outside world
+      # - "443:443"   # SSL
+    # command: /belenios/build.sh
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+    volumes:
+      - "$PWD/oci/runtime/frontend/webapp_src_code:/belenios/src_code"
+    labels:
+      - "belenios.rocks=true"
+    # depends_on:
+      # - belenios_backend
+    # networks:
+      # belenios_build_net:
+        # aliases:
+          # - web.belenios.io
+  belenios_backend_minimal:
+    image: quay.io/pegasusio/belenios_backend_minimal:${BELENIOS_CONTAINERS_TAG}
+    # command: --api --docker
+    container_name: belenios_backend_minimal_build
+    build:
+      context: ./oci/builder/platform/minimal
+      args:
+        - DEBIAN_BASE_IMAGE_TAG=$DEBIAN_BASE_IMAGE_TAG
+    # ports:
+      # # only expose https to outside world
+      # - "443:443"   # SSL
+    command: /belenios/build.sh
+    # command: /bin/bash
+    # stdin_open: true
+    # tty: true
+    volumes:
+      - "$PWD/oci/builder/platform/minimal/belenios_sys_root:/belenios/src_code"
+    labels:
+      - "belenios.rocks=true"
+    # depends_on:
+      # - belenios_backend
+    # networks:
+      # belenios_build_net:
+        # aliases:
+          # - web.belenios.io
+  belenios_unit_tests:
+    image: quay.io/pegasusio/belenios_unit_tests:${BELENIOS_CONTAINERS_TAG}
+    # command: --api --docker
+    container_name: belenios_backend_unit_tests
+    build:
+      context: ./oci/builder/platform/check
+      args:
+        - DEBIAN_BASE_IMAGE_TAG=$DEBIAN_BASE_IMAGE_TAG
+    # ports:
+      # # only expose https to outside world
+      # - "443:443"   # SSL
+    # command: /belenios/build.sh
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+    volumes:
+      - "$PWD/oci/builder/platform/minimal/belenios_sys_root:/belenios/src_code"
+    labels:
+      - "belenios.rocks=true"
+    # depends_on:
+      # - belenios_backend
+    # networks:
+      # belenios_build_net:
+        # aliases:
+          # - web.belenios.io
+
+  belenios_backend_release_server:
+    image: quay.io/pegasusio/belenios_backend_release_server:${BELENIOS_CONTAINERS_TAG}
+    # command: --api --docker
+    container_name: belenios_backend_release_server_build
+    build:
+      context: ./oci/builder/platform/release-server
+      args:
+        - DEBIAN_BASE_IMAGE_TAG=$DEBIAN_BASE_IMAGE_TAG
+    # ports:
+      # # only expose https to outside world
+      # - "443:443"   # SSL
+    # command: /belenios/build.sh
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+    volumes:
+      - "$PWD/oci/builder/platform/minimal/belenios_sys_root:/belenios/src_code"
+    labels:
+      - "belenios.rocks=true"
+    # depends_on:
+      # - belenios_backend
+    # networks:
+      # belenios_build_net:
+        # aliases:
+          # - web.belenios.io
+
+  belenios_docs:
+    image: quay.io/pegasusio/belenios_backend_release_server:${BELENIOS_CONTAINERS_TAG}
+    # command: --api --docker
+    container_name: belenios_docs_build
+    build:
+      context: ./oci/builder/platform/doc
+      args:
+        - DEBIAN_BASE_IMAGE_TAG=$DEBIAN_BASE_IMAGE_TAG
+    # ports:
+      # # only expose https to outside world
+      # - "443:443"   # SSL
+    # command: /belenios/build.sh
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+    volumes:
+      - "$PWD/oci/builder/platform/minimal/belenios_sys_root:/belenios/src_code"
+    labels:
+      - "belenios.rocks=true"
+    # depends_on:
+      # - belenios_backend
+    # networks:
+      # belenios_build_net:
+        # aliases:
+          # - web.belenios.io
+
+  belenios_tool_runtime:
+    image: quay.io/pegasusio/belenios_tool_runtime:${BELENIOS_CONTAINERS_TAG}
+    container_name: belenios_tool_runtime_build
+    build:
+      context: ./oci/builder/platform/belenios-tool-runner
+      args:
+        - DEBIAN_BASE_IMAGE_TAG=$DEBIAN_BASE_IMAGE_TAG
+        - NON_ROOT_USER_UID=$NON_ROOT_USER_UID
+        - NON_ROOT_USER_GID=$NON_ROOT_USER_GID
+        - NON_ROOT_USER_NAME=$NON_ROOT_USER_NAME
+        - NON_ROOT_USER_GRP=$NON_ROOT_USER_GRP
+    # ports:
+      # # only expose https to outside world
+      # - "443:443"   # SSL
+    # command: /belenios/build.sh
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+    volumes:
+      - "$PWD/oci/builder/platform/minimal/belenios_sys_root:/belenios/src_code"
+    labels:
+      - "belenios.rocks=true"
+    # depends_on:
+      # - belenios_backend
+    # networks:
+      # belenios_build_net:
+        # aliases:
+          # - web.belenios.io
